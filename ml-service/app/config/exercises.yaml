@@ -1,0 +1,534 @@
+# Per-exercise joint-angle rules.
+#
+# rep.metric picks WHAT drives the rep state machine:
+#   joint      - interior angle at `vertex` between `a` and `b`   (0..180)
+#   elevation  - angle of origin->target above horizontal        (-90..90)
+#
+# The rep state machine uses hysteresis: the value must fall below `down_below`
+# to arm a rep, then rise above `up_above` to count it. The gap between the two
+# thresholds is what stops jitter double-counting, so keep them well apart.
+#
+# form rules are checked only while the rep is in the `up` phase unless
+# `phase: any`, because most cues ("straighten your elbow") are meaningless at
+# rest. Each rule contributes equally to form_score.
+#
+# Cues carry si/ta translations so the app can mirror the patient's language
+# without a round trip to a translation service.
+#
+# -----------------------------------------------------------------------------
+# CALIBRATION
+#
+# Thresholds marked CALIBRATED were measured from the reference clips in
+# frontend/assets/videos/exercise/ using tools/profile_video.py, which reports
+# the real p15/p50/p85 distribution of every trackable metric. The provenance
+# comment on each exercise names the clip and the observed range.
+#
+# Exercises with `calibrated: false` were NOT measured from footage. Theirs are
+# reasoned defaults: derived from joint anatomy and from measurements taken on
+# other clips in this project, then documented number by number so the reasoning
+# can be checked or overruled. That is weaker than measuring the exercise itself,
+# and the flag stays false to say so, but it is not guesswork.
+#
+# Reference clips show therapists and demonstrators, not patients. Thresholds
+# are therefore set so a competent demonstration scores near 1.0, which is what
+# makes a patient's deviation visible. Do not loosen them to flatter a patient.
+# -----------------------------------------------------------------------------
+
+defaults:
+  # Opt-in, so a newly added exercise is honest about being unmeasured until
+  # someone profiles it against real footage.
+  calibrated: false
+  min_visibility: 0.3
+  # A rep faster than this is almost certainly tracking noise, not a movement.
+  min_rep_interval_s: 0.6
+
+exercises:
+  # CALIBRATED against "Mobility/Flexion and Extension upper limb/
+  # upper-limb flexion & extension.mp4" (179/179 frames tracked).
+  # Shoulder joint angle ran 2.7 -> 99.6 (p15 -> p85), a clean bimodal signal.
+  #
+  # NOTE: this deliberately uses the shoulder JOINT angle, not limb elevation.
+  # Elevation only reached +17.9 in that clip, because functional flexion for a
+  # stroke patient tops out near 90-100 degrees rather than overhead -- an
+  # elevation threshold of 45 would never fire. Use elevation only for genuine
+  # overhead reaching.
+  - id: shoulder_flexion_left
+    calibrated: true
+    name: Left Arm Raise
+    name_si: වම් අත ඉහළට
+    name_ta: இடது கை உயர்த்தல்
+    target_reps: 10
+    rep:
+      metric: joint
+      vertex: left_shoulder
+      a: left_hip
+      b: left_elbow
+      down_below: 20
+      up_above: 85
+    form:
+      # Observed 156 -> 180 through the raise, so 150 is a fair floor.
+      - id: elbow_straight
+        metric: joint
+        vertex: left_elbow
+        a: left_shoulder
+        b: left_wrist
+        min: 150
+        cue: Keep your elbow straight
+        cue_si: ඔබේ වැලමිට කෙළින් තබා ගන්න
+        cue_ta: உங்கள் முழங்கையை நேராக வைத்திருங்கள்
+      # Observed torso tilt stayed 0 -> 8.3, so 20 leaves real headroom.
+      - id: torso_upright
+        metric: tilt
+        top: left_shoulder
+        bottom: left_hip
+        max: 20
+        phase: any
+        cue: Sit tall, try not to lean
+        cue_si: කෙළින් වාඩි වන්න, ඇල නොවන්න
+        cue_ta: நேராக உட்காருங்கள், சாய வேண்டாம்
+
+  # CALIBRATED, same clip, mirrored limb (right shoulder ran 1.8 -> 106.2).
+  - id: shoulder_flexion_right
+    calibrated: true
+    name: Right Arm Raise
+    name_si: දකුණු අත ඉහළට
+    name_ta: வலது கை உயர்த்தல்
+    target_reps: 10
+    rep:
+      metric: joint
+      vertex: right_shoulder
+      a: right_hip
+      b: right_elbow
+      down_below: 20
+      up_above: 85
+    form:
+      - id: elbow_straight
+        metric: joint
+        vertex: right_elbow
+        a: right_shoulder
+        b: right_wrist
+        min: 150
+        cue: Keep your elbow straight
+        cue_si: ඔබේ වැලමිට කෙළින් තබා ගන්න
+        cue_ta: உங்கள் முழங்கையை நேராக வைத்திருங்கள்
+      - id: torso_upright
+        metric: tilt
+        top: right_shoulder
+        bottom: right_hip
+        max: 20
+        phase: any
+        cue: Sit tall, try not to lean
+        cue_si: කෙළින් වාඩි වන්න, ඇල නොවන්න
+        cue_ta: நேராக உட்காருங்கள், சாய வேண்டாம்
+
+  # CALIBRATED against "Mobility/Flexion and Extension upper limb/
+  # elbow extension - upperlimb.mp4". Left elbow ran 77.3 -> 158.1 (p15 -> p85).
+  #
+  # The torso rule is deliberately loose: that clip shows a seated patient whose
+  # trunk tilt reached 41 degrees at p85, so a tight rule would fire constantly
+  # and train people to ignore cues. Form scoring for this exercise is weak until
+  # better footage is available.
+  - id: elbow_extension_left
+    calibrated: true
+    name: Left Elbow Extension
+    name_si: වම් වැලමිට දිගු කිරීම
+    name_ta: இடது முழங்கை நீட்டல்
+    target_reps: 12
+    rep:
+      metric: joint
+      vertex: left_elbow
+      a: left_shoulder
+      b: left_wrist
+      down_below: 95
+      up_above: 152
+    form:
+      - id: trunk_stable
+        metric: tilt
+        top: left_shoulder
+        bottom: left_hip
+        max: 45
+        phase: any
+        cue: Try to keep your body still
+        cue_si: ඔබේ ශරීරය නිශ්චලව තබා ගන්න
+        cue_ta: உங்கள் உடலை அசையாமல் வைத்திருங்கள்
+
+  # CALIBRATED, same clip, mirrored limb (right elbow ran 94.5 -> 164.7).
+  - id: elbow_extension_right
+    calibrated: true
+    name: Right Elbow Extension
+    name_si: දකුණු වැලමිට දිගු කිරීම
+    name_ta: வலது முழங்கை நீட்டல்
+    target_reps: 12
+    rep:
+      metric: joint
+      vertex: right_elbow
+      a: right_shoulder
+      b: right_wrist
+      down_below: 100
+      up_above: 158
+    form:
+      - id: trunk_stable
+        metric: tilt
+        top: right_shoulder
+        bottom: right_hip
+        max: 45
+        phase: any
+        cue: Try to keep your body still
+        cue_si: ඔබේ ශරීරය නිශ්චලව තබා ගන්න
+        cue_ta: உங்கள் உடலை அசையாமல் வைத்திருங்கள்
+
+  # CALIBRATED against "Strenghtening/Straight Leg Raise with Weight.mp4"
+  # (683/683 frames tracked). Leg elevation ran -24.3 -> +4.3.
+  #
+  # Uses elevation rather than the hip joint angle because elevation INCREASES as
+  # the leg rises, which is the direction the rep state machine expects.
+  #
+  # CAVEAT: that clip is an isometric demo -- one full raise held for ~6s -- so it
+  # validates the thresholds but says nothing about repetition cadence.
+  # No torso rule: the patient is supine, where trunk tilt is meaningless (it
+  # measured 13.8 -> 28 throughout, which would false-fire an upright rule).
+  - id: straight_leg_raise_left
+    calibrated: true
+    name: Left Straight Leg Raise
+    name_si: වම් කකුල කෙළින් ඔසවන්න
+    name_ta: இடது காலை நேராக உயர்த்தல்
+    target_reps: 10
+    rep:
+      metric: elevation
+      origin: left_hip
+      target: left_ankle
+      down_below: -20
+      up_above: 0
+    form:
+      # Tracing the knee through the raise showed it sitting at 131-151 with
+      # dips near 110, so a 140 floor flagged competent demonstration as bad
+      # form (scored 0.56). 125 accepts the observed hold and still catches a
+      # genuinely collapsed knee. Knee tracking is noisier supine than seated.
+      - id: knee_straight
+        metric: joint
+        vertex: left_knee
+        a: left_hip
+        b: left_ankle
+        min: 125
+        cue: Keep your knee straight as you lift
+        cue_si: ඔසවන විට දණහිස කෙළින් තබා ගන්න
+        cue_ta: உயர்த்தும்போது முழங்காலை நேராக வைக்கவும்
+
+  - id: straight_leg_raise_right
+    calibrated: true
+    name: Right Straight Leg Raise
+    name_si: දකුණු කකුල කෙළින් ඔසවන්න
+    name_ta: வலது காலை நேராக உயர்த்தல்
+    target_reps: 10
+    rep:
+      metric: elevation
+      origin: right_hip
+      target: right_ankle
+      down_below: -20
+      up_above: 0
+    form:
+      - id: knee_straight
+        metric: joint
+        vertex: right_knee
+        a: right_hip
+        b: right_ankle
+        min: 125
+        cue: Keep your knee straight as you lift
+        cue_si: ඔසවන විට දණහිස කෙළින් තබා ගන්න
+        cue_ta: உயர்த்தும்போது முழங்காலை நேராக வைக்கவும்
+
+  # ---------------------------------------------------------------------------
+  # HAMSTRING SET
+  #
+  # From "hamstring.mp4", a 37s compilation whose on-screen titles name five
+  # exercises. tools/segment_video.py located the boundaries and the clip was cut
+  # into assets/videos/exercise/hamstring/. Pose tracked in 1114/1114 frames, so
+  # these thresholds are unusually well supported.
+  #
+  # Exercise 1, "Hamstring Isometrics" (0-9s), is deliberately ABSENT. Measured
+  # across that segment the widest-moving joint spans 2.5 degrees — it is an
+  # isometric hold, and a rep counter has nothing to count. Adding it would give
+  # a patient an exercise stuck at zero. It needs hold-duration scoring, which the
+  # engine does not have yet.
+  #
+  # LATERALITY: each clip demonstrates one leg only, and MediaPipe's left/right
+  # assignment flips with body orientation (the prone segment reads as left_knee
+  # where supine and seated read as right_knee). Rather than claim a side that
+  # hasn't been verified, these track the joint that was measured to move and are
+  # named without a side. Mirrored variants need footage of the other leg.
+  # ---------------------------------------------------------------------------
+
+  # CALIBRATED against hamstring/2-curl-supine.mp4 (source 10-14.5s).
+  # Tracked knee ran 89 -> 133; one full flexion-extension cycle in the clip.
+  # No form rule: the meaningful error here is lifting the hips, and this segment
+  # gives no measurement of that to threshold against.
+  - id: hamstring_curl_supine
+    calibrated: true
+    name: Hamstring Curl Lying Down
+    name_si: උඩුබැලි වී කෙන්ඩාව නවන්න
+    name_ta: படுத்துக்கொண்டு தொடை மடக்கல்
+    target_reps: 10
+    rep:
+      metric: joint
+      vertex: right_knee
+      a: right_hip
+      b: right_ankle
+      down_below: 89
+      up_above: 133
+
+  # CALIBRATED against hamstring/3-curl-prone.mp4 (source 16-22.5s).
+  # Tracked knee ran 120 -> 169, four reps in the clip.
+  - id: hamstring_curl_prone
+    calibrated: true
+    name: Hamstring Curl Face Down
+    name_si: උඩුකුරු වී කෙන්ඩාව නවන්න
+    name_ta: குப்புறப் படுத்து தொடை மடக்கல்
+    target_reps: 10
+    rep:
+      metric: joint
+      vertex: left_knee
+      a: left_hip
+      b: left_ankle
+      down_below: 128
+      up_above: 162
+    form:
+      # The hip held 176.9-178.8 throughout, so it stays fully extended in a
+      # correct rep. Lifting the thigh off the bed is the classic error here, and
+      # 170 flags it without firing on normal variation.
+      - id: hip_flat
+        metric: joint
+        vertex: left_hip
+        a: left_shoulder
+        b: left_knee
+        min: 170
+        cue: Keep your thigh flat on the bed
+        cue_si: ඔබේ කලවා ඇඳේ පැතලිව තබා ගන්න
+        cue_ta: உங்கள் தொடையை படுக்கையில் தட்டையாக வைக்கவும்
+
+  # CALIBRATED against hamstring/4-curl-seated.mp4 (source 24-29.5s).
+  # Tracked knee ran 84 -> 135, two reps in the clip.
+  - id: hamstring_curl_seated
+    calibrated: true
+    name: Seated Hamstring Curl
+    name_si: වාඩි වී කෙන්ඩාව නවන්න
+    name_ta: அமர்ந்து தொடை மடக்கல்
+    target_reps: 10
+    rep:
+      metric: joint
+      vertex: right_knee
+      a: right_hip
+      b: right_ankle
+      down_below: 92
+      up_above: 128
+    form:
+      # Trunk tilt sat at 32.5-34.2 throughout — that is simply what sitting in
+      # this chair measures, not a fault. 45 leaves headroom while still catching
+      # someone slumping or leaning away from the backrest.
+      - id: sit_back
+        metric: tilt
+        top: right_shoulder
+        bottom: right_hip
+        max: 45
+        phase: any
+        cue: Sit back against the chair
+        cue_si: පුටුවේ පිටුපසට හේත්තු වී වාඩි වන්න
+        cue_ta: நாற்காலியில் பின்னால் சாய்ந்து உட்காரவும்
+
+  # CALIBRATED against hamstring/5-romanian-deadlift.mp4 (source 30.5-36.5s).
+  # The HIP hinge ran 94 -> 151 and is what the movement is. The shoulder moved
+  # further (spread 116) because the arm reaches toward the floor, which is why
+  # picking the widest-moving metric automatically would have tracked the wrong
+  # joint here.
+  - id: romanian_deadlift_single_leg
+    calibrated: true
+    name: Single Leg Deadlift
+    name_si: එක් කලකින් නැමීම
+    name_ta: ஒற்றைக் காலில் குனிதல்
+    target_reps: 8
+    rep:
+      metric: joint
+      vertex: left_hip
+      a: left_shoulder
+      b: left_knee
+      down_below: 103
+      up_above: 143
+    form:
+      # Standing knee held 158-171, so it stays near-straight through the hinge.
+      # 150 catches a collapse into a squat, which turns this into a different
+      # exercise and takes the load off the hamstring.
+      - id: standing_knee_straight
+        metric: joint
+        vertex: left_knee
+        a: left_hip
+        b: left_ankle
+        min: 150
+        cue: Keep your standing leg almost straight
+        cue_si: ඔබ සිටගෙන සිටින කකුල කෙළින් තබා ගන්න
+        cue_ta: நிற்கும் காலை கிட்டத்தட்ட நேராக வைக்கவும்
+
+  # ---------------------------------------------------------------------------
+  # BALANCE — HOLD MODE
+  #
+  # CALIBRATED against "Balance/videoplayback.mp4" (401/427 frames tracked over
+  # the 1-17s demonstration; the rest is a branding outro).
+  #
+  # Measured across all 14 trackable angle metrics, the widest movement in that
+  # clip is 3.9 degrees and most are under 1.2 — there is no cycle, so a rep
+  # counter would sit at zero forever. What IS measurable is the position: the
+  # lifted ankle sat 11.9-15.5% of frame height above the standing one, steadily,
+  # for the full 16 seconds, with the trunk within 10 degrees of vertical.
+  #
+  # The gap threshold is 8, comfortably below the 11.9 minimum observed, so a
+  # patient with a lower lift than the demonstrator still registers. The gap is
+  # measured as an absolute difference, so one config serves either leg.
+  # ---------------------------------------------------------------------------
+  - id: single_leg_stance
+    calibrated: true
+    mode: hold
+    name: Single Leg Balance
+    name_si: එක් කලකින් සමතුලිතතාව
+    name_ta: ஒற்றைக் காலில் சமநிலை
+    target_seconds: 20
+    hold:
+      - id: foot_lifted
+        metric: gap
+        a: left_ankle
+        b: right_ankle
+        min: 8
+        cue: Lift one foot clear of the floor
+        cue_si: එක් පාදයක් බිමෙන් ඔසවන්න
+        cue_ta: ஒரு காலை தரையிலிருந்து உயர்த்தவும்
+      - id: upright
+        metric: tilt
+        top: left_shoulder
+        bottom: left_hip
+        max: 20
+        cue: Stand tall, try not to lean
+        cue_si: කෙළින් සිටගන්න, ඇල නොවන්න
+        cue_ta: நேராக நிற்கவும், சாய வேண்டாம்
+
+  # ---------------------------------------------------------------------------
+  # SEATED KNEE EXTENSION — REASONED DEFAULTS, NOT VIDEO-MEASURED
+  #
+  # No clip in the library isolates this movement, and it is not being calibrated
+  # from footage. These numbers come from joint anatomy plus measurements taken
+  # from OTHER clips in this project, which is weaker evidence than measuring the
+  # exercise itself but far better than the arbitrary values that were here.
+  #
+  # rep 100 -> 165
+  #   Sitting puts the knee near 90 degrees of flexion, which this metric reads as
+  #   roughly 85-100 — confirmed at 84 (p15) in the seated hamstring clip. 100
+  #   therefore captures "seated, not yet extended" for anyone.
+  #   Full extension reads 175-180. Requiring that would exclude any patient with
+  #   an extensor lag, which is common after stroke. 165 asks for extension to
+  #   within about 15 degrees of full — a recognised functional target — and was
+  #   observed as reachable (the same seated clip peaked at 179).
+  #   The 65-degree dead band is wide, so tracking jitter cannot inflate the count.
+  #
+  # form: trunk tilt max 45, checked always
+  #   The value that was here, 25, was simply wrong. Sitting in a chair MEASURES
+  #   32-34 degrees of trunk tilt in the seated hamstring clip, so a 25 limit would
+  #   have fired continuously at a patient sitting correctly — and cues that fire
+  #   when nothing is wrong are cues patients learn to ignore. 45 matches the
+  #   measured seated value plus headroom, and still catches someone throwing their
+  #   trunk backwards to swing the leg up.
+  # ---------------------------------------------------------------------------
+  - id: knee_extension_left
+    name: Left Knee Extension
+    name_si: වම් දණහිස දිගු කිරීම
+    name_ta: இடது முழங்கால் நீட்டல்
+    target_reps: 12
+    rep:
+      metric: joint
+      vertex: left_knee
+      a: left_hip
+      b: left_ankle
+      down_below: 100
+      up_above: 165
+    form:
+      - id: torso_upright
+        metric: tilt
+        top: left_shoulder
+        bottom: left_hip
+        max: 45
+        phase: any
+        cue: Keep your back against the chair
+        cue_si: ඔබේ පිට පුටුවේ තබා ගන්න
+        cue_ta: உங்கள் முதுகை நாற்காலியில் வைத்திருங்கள்
+
+  # Mirror of the above. Added because the previous single left-side entry was the
+  # wrong default half the time: in hemiparesis the affected leg is the one that
+  # needs the work, and it is as often the right.
+  - id: knee_extension_right
+    name: Right Knee Extension
+    name_si: දකුණු දණහිස දිගු කිරීම
+    name_ta: வலது முழங்கால் நீட்டல்
+    target_reps: 12
+    rep:
+      metric: joint
+      vertex: right_knee
+      a: right_hip
+      b: right_ankle
+      down_below: 100
+      up_above: 165
+    form:
+      - id: torso_upright
+        metric: tilt
+        top: right_shoulder
+        bottom: right_hip
+        max: 45
+        phase: any
+        cue: Keep your back against the chair
+        cue_si: ඔබේ පිට පුටුවේ තබා ගන්න
+        cue_ta: உங்கள் முதுகை நாற்காலியில் வைத்திருங்கள்
+
+  # ---------------------------------------------------------------------------
+  # SIT TO STAND — REASONED DEFAULTS, NOT VIDEO-MEASURED
+  #
+  # There is no sit-to-stand clip in the library. "Step up.mp4" was profiled as the
+  # nearest proxy (89% tracked) but its knee median is 171 degrees, i.e. standing,
+  # with only brief excursions — and stepping onto a box loads one leg where
+  # sit-to-stand loads both. So these are reasoned, not measured.
+  #
+  # rep 105 -> 165
+  #   Seated reads 85-100 (measured 84 at p15 in the seated hamstring clip), so 105
+  #   reliably registers "seated" even for a patient who cannot fully flex the knee
+  #   against the chair.
+  #   Standing reads 170-179 (measured: 171 median in Step up, 178-179 in the
+  #   side-steps clip). 165 therefore requires a genuine stand while tolerating the
+  #   slight knee flexion most patients stand with. A lower bar like 160 could be
+  #   satisfied by a half-rise, which is exactly the compensation to discourage.
+  #
+  # form: trunk tilt max 30, checked only at the top
+  #   Standing upright measures 2-4 degrees head-on (side-steps clip) but up to 26
+  #   at an angled camera (Step up, p85 25.6). The old value of 20 sat BELOW that,
+  #   so it would have failed a correctly standing patient purely because of where
+  #   the phone was placed. 30 clears the observed range with headroom.
+  #   Checked at the top only: leaning forward to rise is correct technique, not a
+  #   fault, so judging it mid-movement would penalise good form.
+  #
+  # Tracks one knee, which is fine here — sit-to-stand extends both together, so
+  # either knee follows the movement. That is not true of the knee extensions
+  # above, which is why those are mirrored and this is not.
+  # ---------------------------------------------------------------------------
+  - id: sit_to_stand
+    name: Sit to Stand
+    name_si: වාඩි වී නැගිටීම
+    name_ta: உட்கார்ந்து எழுதல்
+    target_reps: 8
+    rep:
+      metric: joint
+      vertex: left_knee
+      a: left_hip
+      b: left_ankle
+      down_below: 105
+      up_above: 165
+    form:
+      - id: stand_tall
+        metric: tilt
+        top: left_shoulder
+        bottom: left_hip
+        max: 30
+        cue: Stand up fully before sitting back down
+        cue_si: නැවත වාඩි වීමට පෙර සම්පූර්ණයෙන් නැගිටින්න
+        cue_ta: மீண்டும் உட்காரும் முன் முழுமையாக எழுந்து நிற்கவும்

@@ -1,0 +1,4 @@
+# Ambient (non-exercise) fall monitor only. Pulls PyTorch -- ~2.5GB on Windows CPU.
+# Install separately: pip install -r requirements-yolo.txt
+-r requirements.txt
+ultralytics==8.3.58

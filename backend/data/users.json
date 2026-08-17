@@ -1,0 +1,70 @@
+[
+  {
+    "id": "patient-john",
+    "role": "patient",
+    "username": "john",
+    "name": "John Fernando",
+    "age": 62,
+    "strokeType": "ischemic",
+    "secretHash": "scrypt$29ad8f2cf0b0dfa15e3b7c95373f49f4$54d10f38581f6d287e9d3748656651fe9ee20f514f119fd888d62a4b1287d6a9905976d67e9be2f68b060aa224cf58b573bbd8717072a02282917ae542ecd5f7"
+  },
+  {
+    "id": "patient-nimal",
+    "role": "patient",
+    "username": "nimal",
+    "name": "Nimal Perera",
+    "age": 64,
+    "strokeType": "ischemic",
+    "secretHash": "scrypt$dd013d8168b8c6c1d14c4b380703eaf6$df40cd76b3f5606cf56df2815b2184badf3841e8fbfc9fc42507f66cb5c06d9c83c97ff82df222aae681885716ef935ebf8fc88de0695151fb7f140bfdbba5c2"
+  },
+  {
+    "id": "patient-kamala",
+    "role": "patient",
+    "username": "kamala",
+    "name": "Kamala Silva",
+    "age": 58,
+    "strokeType": "haemorrhagic",
+    "secretHash": "scrypt$542f704ce045e8676e4637624d788fc7$2a9ffc4cebbb8be0c88a9da5e2f22573a53a3fcf5240aef3b8ede2534de2592b7e8af5fba597336559468dc8b0533c3a97dac3033ad59b2dd45a1674e0bf9245"
+  },
+  {
+    "id": "patient-ravi",
+    "role": "patient",
+    "username": "ravi",
+    "name": "Ravi Kumar",
+    "age": 71,
+    "strokeType": "ischemic",
+    "secretHash": "scrypt$f49489bd2e45adc28b6c069194e8b3b2$4559486571b6517b19c53b62e385a3e4f1c38fa735e8581ee21424ff668c5e2f326b31041b91c72ce1eef86bb721560d3ec02014b6ba819f21b7273876000a25"
+  },
+  {
+    "id": "caregiver-sarah",
+    "role": "caregiver",
+    "username": "sarah",
+    "name": "Sarah Fernando",
+    "email": "caregiver@neuropulse.lk",
+    "secretHash": "scrypt$1a3968411727830d1d8672baffdf9f68$ef90b0ea1b37549d6c3b722b8cd665d0991d5a54567a0403c879411e43b7150a6c8794e2c9c822041ff8248d9ff93259654d116a9af157f403bdee910936b1d2"
+  },
+  {
+    "id": "caregiver-anoma",
+    "role": "caregiver",
+    "username": "anoma",
+    "name": "Anoma Perera",
+    "email": "anoma@neuropulse.lk",
+    "secretHash": "scrypt$6a8f00304d8c087f2f7350444a4905cd$dc4d6dc622ef7922f597804a59581a66dabfa387f85595fafc7fc4c6408b39a4538d9af1087c89544ee79429350e4d042df289d7ba0f049911282757b82da9f5"
+  },
+  {
+    "id": "physio-jenkins",
+    "role": "physio",
+    "username": "jenkins",
+    "name": "Dr. Sarah Jenkins",
+    "email": "physio@neuropulse.lk",
+    "secretHash": "scrypt$dff672e5e09326d2e2d7cbff0a844f13$38f2986b2bb93817fcecce9f9ab3ea85718bfc2263d96ac7c5e9a36ade318a6a258bbcc0b53030cd66aea9fae6b0bc1b35c00be69e8d3f6b59cbd8093ebc6bd7"
+  },
+  {
+    "id": "physio-nuwan",
+    "role": "physio",
+    "username": "nuwan",
+    "name": "Dr. Nuwan Bandara",
+    "email": "nuwan@neuropulse.lk",
+    "secretHash": "scrypt$4e29edb12669736f0020b4bf3aed95c7$43317f167b477251228d3914c70e188402b1f17bdaf1ad5200851923925f0c4ad8fb67d9d13deb9c6e6b7db6572ec20333f457e915428bdc512c5890f8079c06"
+  }
+]

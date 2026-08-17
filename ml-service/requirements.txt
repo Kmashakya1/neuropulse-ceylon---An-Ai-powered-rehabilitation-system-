@@ -1,0 +1,19 @@
+# Core session service: pose logic, rep counting, form scoring, fall detection.
+# Deliberately excludes torch/ultralytics -- in-session fall detection works from
+# keypoint velocity, so the 2.5GB PyTorch stack is only needed by the ambient
+# YOLO monitor (see requirements-yolo.txt).
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+PyYAML==6.0.2
+httpx==0.28.1
+
+# Pinned by mediapipe, which requires numpy<2. Do not bump independently.
+numpy==1.26.4
+
+# Only needed by tools/replay_video.py, which reads the reference videos and
+# feeds them through the same engine the phone talks to. mediapipe pulls in
+# opencv-contrib-python (a superset of opencv-python), so don't add the latter
+# as well -- the two clash over the shared cv2 module.
+mediapipe==0.10.20
